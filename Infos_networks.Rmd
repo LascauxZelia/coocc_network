@@ -1,0 +1,55 @@
+ ---
+title: "R Notebook"
+output: html_notebook
+---
+
+#### **Information on the different clustering algorythms implemented in igraph**:
+
+* **cluster_edge_betweenness**: The idea of the edge betweenness based community structure detection is that it is likely that edges connecting separate modules have high edge betweenness as all the shortest paths from one module to another must traverse through them. So if we gradually remove the edge with the highest edge betweenness score we will get a hierarchical map, a rooted tree, called a dendrogram of the graph. The leafs of the tree are the individual vertices and the  root of the tree represents the whole graph. cluster_edge_betweenness performs this algorithm by calculating the edge betweenness of the graph, removing the edge with the highest edge betweenness score, then recalculating edge betweenness of the edges and again removing the one with the highest score, etc.
+
+* **cluster_fast_greedy**: This function implements the fast greedy modularity optimization algorithm for finding community structure, see A Clauset, MEJ Newman, C Moore: Finding community structure in very large networks, http://www.arxiv.org/abs/cond-mat/0408187 for the details.
+
+* **cluster_infomap**: Find community structure that minimizes the expected description length of a random walker trajectory. The original paper: M. Rosvall and C. T. Bergstrom, Maps of information flow reveal community structure in complex networks, PNAS 105, 1118 (2008) http://dx.doi.org/10.1073/pnas. 0706851105, http://arxiv.org/abs/0707.0609.
+
+* **cluster_label_prop**: This is a fast, nearly linear time algorithm for detecting community structure in networks. In works by labeling the vertices with unique labels and then updating the labels by majority voting in the neighborhood of the vertex.
+
+* **cluster_leading_eigen**: This function tries to find densely connected subgraphs in a graph by calculating the leading nonnegative eigenvector of the modularity matrix of the graph.
+
+* **cluster_louvain**: This function implements the multi-level modularity optimization algorithm for finding community structure (http://arxiv.org/abs/arXiv:0803.0476). It is based on the modularity measure and a hierarchial approach. Initially, each vertex is assigned to a community on its own. In every step, vertices are re-assigned to communities in a local, greedy way: each vertex is moved to the community with which it achieves the highest contribution to modularity. When no vertices can be reassigned, each community is considered a vertex on its own, and the process starts again with the merged communities. The process stops when there is only a single vertex left or when the modularity cannot be increased any more in a step.
+
+* **cluster_optimal**: This function calculates the optimal community structure for a graph, in terms of maximal modularity score. The calculation is done by transforming the modularity maximization into an integer programming problem, and then calling the GLPK library to solve that. Please the reference below for details. Note that modularity optimization is an NP-complete problem, and all known algorithms for it have exponential time complexity. This means that **you probably don’t want to run this function on larger graphs**. Graphs with up to fifty vertices should be fine, graphs with a couple of hundred vertices might be possible.
+
+* **cluster_spinglass**: This function tries to find communities in a graph via a spin-glass model and simulated annealing. A community is a set of nodes with many edges inside the community and few edges between outside it (i.e. between the community itself and the rest of the graph.). This idea is reversed for edges having a negative weight, ie. few negative edges inside a community and many negative edges between communities. **Note that only the ‘neg’ implementation supports negative edge weights**.
+
+* **cluster_walktrap**: This function tries to find densely connected subgraphs, also called communities in a graph via random walks. The idea is that short random walks tend to stay in the same community.
+
+
+#### **Information on the different centrality measures implemented in igraph**:
+
+From *"Analysing ecological networks of species interactions" (10.1111/brv.12433)*.
+
+* **Degree centrality** is a simple count of the number of interactoins established by a node
+* **Closeness centrality** measures the proximity of a species to all other species in the network, and is therefore global in that, although defined at the species level, it accounts for the structure of the entire network. It is based on the shortest path length between pairs of species and thus indicates how rapidly/efficiently a node is likely to influence the overall network.
+* **Betweenness Centrality** describes the number of times a species is between a pair of other species, i.e. how many paths (either directed or not) go through it. This measure is thus ideal to study the influence of species loss on fragmentation processes. 
+* **Eigenvector centrality** is akin to a simulation of flow across interactions, in which each species influences all of its partners simultaneously. It then measures the relative importance of species by assigning them a score on the basis that an interaction with more influential species contributes more to a species’ score than the same interaction with a low-scoring species.
+* **Katz’s centrality** is a measure of the influence of a node in the network. This measure  takes into account all the interactions connecting a node to its neighbourhood. This is also the only measure to have a probabilistic equivalent (Poisot et al., 2016b). **NOT IMPLEMENTED IN OUR PIPELINE** because only available in package CINNA and the associated function does not allow disconnected graphs.
+* **Hub score and authority score** originates from the analysis of the web and the search for "authoritative" pages. Hub and authority scores of the vertices are defined as the principal eigenvector of A*t(A), where A is the adjacency matrix of the graph. https://www.cs.cornell.edu/home/kleinber/auth.pdf
+
+In practice, hub score and authroity score are the same and are highly correlated with eigenvector centrality. We'll use hub score as its meaning is more readily understandable.
+
+
+
+#### **Notion of centralization**
+
+Because the absolute values of centrality vary with network size and connectance, Freeman et al. (1979) suggested that the centralization measure, rarely applied in ecology, be used when comparing centrality across networks.
+
+
+#### **Estimation of within/across modules connectivity, i.e. z-score and Participation Coefficient, respectively**:
+
+* **Participation coefficient** : describes the profile of a node interactions with species found outside of the module it belongs to.
+
+* **z-score** : a measure of the connectivity from a given vertex to other vertices in its module/community.
+
+Both metrics are derived from *Guimera, R. and Amaral, L.A.N. (2005) Cartography of complex networks: modules and universal roles, Journal of Statistical Mechanics: Theory and Experiment, 02, P02001*. They are estimated using the R package **brainGraph**.
+
+Olesen et al. (2007) used these two values to divide species into four groups, based on a cutoff for z (2.5) and for PC (0.62). Species with low z and low PC are ‘peripherals’ – they are not well connected within or between modules. Species with low z and high PC connect well between, but not within, modules, and are ‘connectors’. Species with high z and low PC are ‘module hubs’, well connected within their own modules but not with the outside. Finally, species with high z and high PC are ‘network hubs’, connecting the entire community.
